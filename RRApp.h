@@ -4,12 +4,18 @@
 #include "SDL2/SDL.h"
 #include "RRMap.h"
 
+
+
 class RRApp{
 	public:
 		RRApp(SDL_Window *window, SDL_Renderer *renderer);
 		void mainLoop();
+		int getSpeed();
 		
 	private:
+		int keyStatus[4] = {0};
+		void updateSpeed();
+		int speed;
 		RRMap *map;
 		bool finish;
 		SDL_Window *window;
