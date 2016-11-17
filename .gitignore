@@ -1,7 +1,6 @@
 *.o
 *.dll
 *.exe
-img
 *.dev
 *.a
 *.layout
