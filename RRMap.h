@@ -13,6 +13,32 @@ class RRApp;
 using namespace std;
 
 
+class MapSection{
+	public:
+		MapSection(SDL_Texture *txt, int ypos, SDL_Rect screen);
+		SDL_Rect *dst();
+		SDL_Rect *src();
+		SDL_Texture *getTexture();
+		void move(int deltay);
+		int inScreen();
+	private:
+		void updateRect();
+		SDL_Texture *img;
+		int ypos;
+		double scale;
+		SDL_Rect src_rect,dst_rect;
+		SDL_Rect size;
+		SDL_Rect screen;
+};
+
+class Bridge: public MapSection{
+	public:
+		Bridge(SDL_Texture *txt, int ypos, SDL_Rect screen);
+		void destroy();
+	private:
+		bool destroyed = false;
+};
+
 class RRMap{
 	public:
 		RRMap(RRApp * app, SDL_Window *window, SDL_Renderer *renderer);
@@ -20,6 +46,8 @@ class RRMap{
 		void update();
 	private:
 		vector<SDL_Texture *> mapimg;
+		int mapindex;
+		SDL_Texture *bridgeimg;
 		RRApp *app;
 		SDL_Window *window;
 		SDL_Renderer *renderer;
@@ -28,31 +56,12 @@ class RRMap{
 		SDL_Rect size;
 		SDL_Rect rect1,rect2;
 		SDL_Rect br;
-		SDL_Texture *img1,*img2, *bridge;
+		MapSection *map1,*map2;
+		Bridge *bridge;
 		
 		SDL_Rect screen;
 		Player *player;
 		list<shared_ptr<Projectile>> projectiles;
 };
 
-class MapSection{
-	public:
-		MapSection(SDL_Texture *txt, int ypos);
-		SDL_Rect dst();
-		SDL_Rect src();
-		SDL_Texture *getTexture();
-		void move(int deltay);
-	private:
-		SDL_Texture *img;
-		int ypos;
-		SDL_Rect size;
-};
-
-class Bridge: public MapSection{
-	public:
-		Bridge(SDL_Texture *txt, int ypos);
-		void destroy();
-	private:
-		bool destroyed = false;
-};
 #endif
