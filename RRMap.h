@@ -9,34 +9,47 @@
 #include "Asset.h"
 
 class RRApp;
+//class Projectile;
+//class Player;
 
 using namespace std;
 
-
 class MapSection{
 	public:
-		MapSection(SDL_Texture *txt, int ypos, SDL_Rect screen);
+		MapSection(SDL_Renderer *renderer, SDL_Texture *txt, int ypos, SDL_Rect screen);
+		MapSection(SDL_Renderer *renderer, SDL_Texture *txt, const char *boundaryFile, int ypos, SDL_Rect screen);
 		SDL_Rect *dst();
 		SDL_Rect *src();
 		SDL_Texture *getTexture();
 		void move(int deltay);
 		int inScreen();
+		void setYpos(int ypos);
+		void render();
+		SDL_Renderer *renderer;
+		int ypos;
+		
+		vector<SDL_Rect> boundaries;
 	private:
 		void updateRect();
 		SDL_Texture *img;
-		int ypos;
+		
 		double scale;
 		SDL_Rect src_rect,dst_rect;
+		vector<int> boundaryPos;
 		SDL_Rect size;
 		SDL_Rect screen;
+		
+		
 };
 
 class Bridge: public MapSection{
 	public:
-		Bridge(SDL_Texture *txt, int ypos, SDL_Rect screen);
+		Bridge(SDL_Renderer *renderer, SDL_Texture *txt, int ypos, SDL_Rect screen);
 		void destroy();
+		void render();
+		bool destroyed;
 	private:
-		bool destroyed = false;
+		
 };
 
 class RRMap{
@@ -44,8 +57,12 @@ class RRMap{
 		RRMap(RRApp * app, SDL_Window *window, SDL_Renderer *renderer);
 		void render();
 		void update();
+		void destroyBridge();
+		vector<SDL_Rect> *boundingBoxMap1();
+		vector<SDL_Rect> *boundingBoxMap2();
+		SDL_Rect boundingBoxBridge();
 	private:
-		vector<SDL_Texture *> mapimg;
+		vector<MapSection *> maps;
 		int mapindex;
 		SDL_Texture *bridgeimg;
 		RRApp *app;
@@ -60,8 +77,8 @@ class RRMap{
 		Bridge *bridge;
 		
 		SDL_Rect screen;
-		Player *player;
-		list<shared_ptr<Projectile>> projectiles;
+	
 };
+
 
 #endif

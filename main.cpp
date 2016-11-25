@@ -30,7 +30,7 @@ int main()
 	                    , height
 	                    , SDL_WINDOW_SHOWN);
 	SDL_Renderer * g_renderer = SDL_CreateRenderer(g_window, -1, 0);
-	SDL_SetRenderDrawColor(g_renderer, 128, 128, 128, 255);
+	SDL_SetRenderDrawColor(g_renderer, 14, 98, 176, 255);
 
 	RRApp app(g_window, g_renderer);
 	int delay = 1000/60; // 1000 milis in a second, divide by 60 - the framerate

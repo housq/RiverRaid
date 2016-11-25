@@ -4,11 +4,11 @@
 CPP      = g++.exe -D__DEBUG__
 CC       = gcc.exe -D__DEBUG__
 WINDRES  = windres.exe
-OBJ      = main.o RRApp.o Asset.o RRMap.o
-LINKOBJ  = main.o RRApp.o Asset.o RRMap.o
-LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc -L"C:/SDL2-2.0.5/x86_64-w64-mingw32/lib" -L"C:/SDL2-2.0.5/SDL2_image-2.0.1/x86_64-w64-mingw32/lib" -lSDL2 -lSDL2main -lSDL2_image -g3
-INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/SDL2-2.0.5/x86_64-w64-mingw32/include" -I"C:/SDL2-2.0.5/SDL2_image-2.0.1/x86_64-w64-mingw32/include" -I"C:/SDL2-2.0.5/x86_64-w64-mingw32/include/SDL2"
-CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++" -I"C:/SDL2-2.0.5/x86_64-w64-mingw32/include" -I"C:/SDL2-2.0.5/SDL2_image-2.0.1/x86_64-w64-mingw32/include" -I"C:/SDL2-2.0.5/x86_64-w64-mingw32/include/SDL2"
+OBJ      = main.o RRApp.o Asset.o RRMap.o Bullet.o Enemy.o Fuel.o
+LINKOBJ  = main.o RRApp.o Asset.o RRMap.o Bullet.o Enemy.o Fuel.o
+LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc -L"C:/SDL2-2.0.5/x86_64-w64-mingw32/lib" -L"C:/SDL2-2.0.5/SDL2_image-2.0.1/x86_64-w64-mingw32/lib" -L"C:/SDL2-2.0.5/SDL2_ttf-2.0.14/x86_64-w64-mingw32/lib" -lSDL2 -lSDL2main -lSDL2_image -lSDL2_ttf -g3
+INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/SDL2-2.0.5/x86_64-w64-mingw32/include" -I"C:/SDL2-2.0.5/SDL2_image-2.0.1/x86_64-w64-mingw32/include" -I"C:/SDL2-2.0.5/x86_64-w64-mingw32/include/SDL2" -I"C:/SDL2-2.0.5/SDL2_ttf-2.0.14/x86_64-w64-mingw32/include"
+CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++" -I"C:/SDL2-2.0.5/x86_64-w64-mingw32/include" -I"C:/SDL2-2.0.5/SDL2_image-2.0.1/x86_64-w64-mingw32/include" -I"C:/SDL2-2.0.5/x86_64-w64-mingw32/include/SDL2" -I"C:/SDL2-2.0.5/SDL2_ttf-2.0.14/x86_64-w64-mingw32/include"
 BIN      = river.exe
 CXXFLAGS = $(CXXINCS) -std=c++11 -g3 -O3 -Wall
 CFLAGS   = $(INCS) -std=c++11 -g3 -O3 -Wall
@@ -35,3 +35,12 @@ Asset.o: Asset.cpp
 
 RRMap.o: RRMap.cpp
 	$(CPP) -c RRMap.cpp -o RRMap.o $(CXXFLAGS)
+
+Bullet.o: Bullet.cpp
+	$(CPP) -c Bullet.cpp -o Bullet.o $(CXXFLAGS)
+
+Enemy.o: Enemy.cpp
+	$(CPP) -c Enemy.cpp -o Enemy.o $(CXXFLAGS)
+
+Fuel.o: Fuel.cpp
+	$(CPP) -c Fuel.cpp -o Fuel.o $(CXXFLAGS)

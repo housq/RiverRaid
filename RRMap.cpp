@@ -4,13 +4,21 @@
 #include "SDL2/SDL_image.h"
 
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 
 const static int numMaps = 2;
-const static char mapfile[numMaps][40]={
-	"img/mapcolortree.bmp",
-	"img/mapcolor2tree.bmp"
+const static char mapfile[numMaps][100]={
+	"img/mapfinaltree.bmp",
+	"img/mapfinal2tree.bmp"
 };
+
+const static char mapboundary[numMaps][100]={
+	"img/mapfinal.txt",
+	"img/mapfinal2.txt"
+};
+
+const int boundingBoxHeight = 100;
 
 RRMap::RRMap(RRApp *app, SDL_Window *window, SDL_Renderer *renderer): app(app), window(window), renderer(renderer){
 	SDL_GetWindowSize(window, &width, &height);
@@ -21,64 +29,34 @@ RRMap::RRMap(RRApp *app, SDL_Window *window, SDL_Renderer *renderer): app(app), 
 		SDL_Surface *surface = IMG_Load(mapfile[i]);
 		if(surface==NULL)
 			std::cout<<"error "<< IMG_GetError();
-		mapimg.push_back(SDL_CreateTextureFromSurface(renderer, surface));
+		SDL_Texture *txt = SDL_CreateTextureFromSurface(renderer, surface);
+		if(txt==NULL)
+			std::cout<<"error "<< IMG_GetError();
+		maps.push_back(new MapSection(renderer, txt,mapboundary[i], 0,screen));
 	}
-//	size.x = size.y = 0;
-//	SDL_QueryTexture(mapimg[0], NULL, NULL, &size.w, &size.h);
-
-
-//	view_height = screen.h*size.w/screen.w;
-//	rect1.y = size.h - view_height;
-//	rect1.w = size.w;
-//	rect1.h = screen.h *size.w/screen.w;
-//	rect1.x = 0;
 	mapindex = 0;
-	map1 = new MapSection(mapimg[mapindex++],0, screen);
+	map1 = maps[0];	
+
+
+
 	
 	SDL_Surface *surface = IMG_Load("img/bridge.bmp");
 	bridgeimg = SDL_CreateTextureFromSurface(renderer, surface);
-	
 }
 
 
 
 void RRMap::render(){
-	if(map1){
-		printf("%d %d %d %d\n", map1->src()->y, map1->src()->h, map1->dst()->y,map1->dst()->h);
-	}
-	if(bridge){
-		printf("%d %d %d %d\n", bridge->src()->y, bridge->src()->h, bridge->dst()->y,bridge->dst()->h);
-	}
 	if(map1)
-		SDL_RenderCopy(renderer, map1->getTexture(), map1->src(), map1->dst());
-	if(bridge)
-		SDL_RenderCopy(renderer, bridge->getTexture(), bridge->src(), bridge->dst());
+		map1->render();
 	if(map2)
-		SDL_RenderCopy(renderer, map2->getTexture(), map2->src(), map2->dst());
-						
-//	if(rect1.y>=0){
-//		SDL_RenderCopy(renderer, map1, &rect1, &screen);
-//	}
-//	else{		
-//		SDL_Rect screen_down, screen_up;
-//		screen_down = screen;
-//		screen_up = screen; 
-//		screen_up.h = (-rect1.y*screen.w/size.w);
-//		screen_down.y = screen_up.h;
-//		screen_down.h = screen.h-screen_up.h;
-//		SDL_Rect rect3 = rect1;
-//		rect3.y = 0;
-//		rect3.h = view_height+rect1.y;
-//		printf("%d %d %d %d ", rect2.x, rect2.y, rect2.w, rect2.h);
-//		printf("%d %d %d %d ", screen_up.x, screen_up.y, screen_up.w, screen_up.h); 
-//		printf("%d %d %d %d ", rect3.x, rect3.y, rect3.w, rect3.h);
-//		printf("%d %d %d %d \n", screen_down.x, screen_down.y, screen_down.w, screen_down.h); 
-//		SDL_RenderCopy(renderer, map1, &rect3, &screen_down);
-//		SDL_RenderCopy(renderer, map2, &rect2, &screen_up);
-//	}
+		map2->render();
+	if(bridge)
+		bridge->render();
 }
 
 void RRMap::update(){
+    
 	int speed = app->getSpeed();
 	switch(speed){
 		case 0:
@@ -110,14 +88,13 @@ void RRMap::update(){
 	}
 	
 	if(map1 && map1->inScreen()==0 && bridge ==NULL){
-		cout << "create bridge"<<endl;
-		bridge = new Bridge(bridgeimg, screen.h, screen);
-	}else if(map1 && map1->inScreen()==0 && bridge->inScreen()==0 && !map2){
-		map2 = new MapSection(mapimg[mapindex++],screen.h, screen);
-		mapindex = mapindex %numMaps;
-	}else if(map1 && map1->inScreen()==-1){
-		delete map1;
-		printf("delete map1\n");
+		bridge = new Bridge(renderer, bridgeimg, screen.h+map1->ypos, screen);
+	}else if(map1 && bridge && bridge->inScreen()==0 && map2 ==NULL){
+		mapindex = (mapindex+1) %numMaps;
+		map2 = maps[mapindex];
+		map2->setYpos(screen.h+bridge->ypos);
+	}
+	else if(map1 && map1->inScreen()==-1){
 		map1 = NULL;
 	}else if(!map1 &&bridge->inScreen()==-1){
 		delete bridge;
@@ -125,24 +102,76 @@ void RRMap::update(){
 		map1 = map2;
 		map2 = NULL;
 	}
-	
-
 }
 
+vector<SDL_Rect> *RRMap::boundingBoxMap1(){
+	if(map1)
+		return &map1->boundaries;
+	else
+		return NULL;
+}
 
-MapSection::MapSection(SDL_Texture *txt, int ypos, SDL_Rect screen): img(txt), screen(screen){
+vector<SDL_Rect> *RRMap::boundingBoxMap2(){
+	if(map2)
+		return &map2->boundaries;
+	else
+		return NULL;
+}
+
+SDL_Rect RRMap::boundingBoxBridge(){
+	if(bridge && !bridge->destroyed){
+		return *bridge->dst();
+	}else{
+		SDL_Rect rect;
+		rect.h = -1;
+	}
+}
+
+void RRMap::destroyBridge(){
+	if(bridge){
+		bridge->destroy();
+	}
+}
+
+MapSection::MapSection(SDL_Renderer *renderer, SDL_Texture *txt, int ypos, SDL_Rect screen): renderer(renderer), img(txt), screen(screen){
 	size.x = size.y = 0;
 	SDL_QueryTexture(txt, NULL, NULL, &size.w, &size.h);
-	printf("size h %d", size.h);
 	
-	scale = 800.0/600;
-	
-	
+	scale = 1;
 	size.w = size.w*scale;
 	size.h = size.h*scale;
+	
 	this->ypos = size.h+ypos-screen.h;
 	updateRect();
+}
+
+MapSection::MapSection(SDL_Renderer *renderer, SDL_Texture *txt, const char *boundaryFile, int ypos, SDL_Rect screen): MapSection(renderer, txt,ypos,screen){
+	ifstream bounds(boundaryFile);
+	SDL_Rect boundingbox;
+	boundingbox.h = boundingBoxHeight;
+	boundingbox.y = 0;
+	for(int i=0; i<size.h/boundingBoxHeight; i++){
+		int minl,maxl,minr,maxr;
+		bounds >>minl>>maxl>>minr>>maxr;
+		boundingbox.x = 0;
+		boundingbox.w = maxl;
+		boundaries.push_back(boundingbox);
+		boundaryPos.push_back(boundingbox.y);
+		boundingbox.x = minr;
+		boundingbox.w = size.w-minr-1;
+		boundaries.push_back(boundingbox);
+		boundaryPos.push_back(boundingbox.y);
+		boundingbox.y +=boundingBoxHeight;
+	}
+	updateRect();
 } 
+
+void MapSection::render(){
+	SDL_RenderCopy(renderer, getTexture(), src(), dst());
+//	for(int i=0;i<boundaries.size();i++){
+//		SDL_RenderDrawRect(renderer,&boundaries[i]);
+//	}
+}
 
 SDL_Texture *MapSection::getTexture(){
 	return img;
@@ -191,8 +220,40 @@ void MapSection::updateRect(){
 	src_rect.y = src_rect.y / scale;
 	src_rect.h = src_rect.h / scale;
 	src_rect.w = src_rect.w / scale;
+	
+	for(int i=0;i<boundaries.size();i++){
+		boundaries[i].y = boundaryPos[i]-ypos;
+	}
 }
 
-Bridge::Bridge(SDL_Texture *txt, int ypos, SDL_Rect screen):MapSection(txt,ypos,screen){
-	
+void MapSection::setYpos(int ypos){
+	this->ypos = size.h+ypos-screen.h;
+	updateRect();
 }
+
+Bridge::Bridge(SDL_Renderer *renderer, SDL_Texture *txt, int ypos, SDL_Rect screen):MapSection(renderer, txt,ypos,screen){
+	destroyed = false;
+}
+
+void Bridge::destroy(){
+	destroyed = true;
+}
+
+void Bridge::render(){
+	SDL_Rect src = *this->src();
+	SDL_Rect dst = *this->dst();
+	if(!destroyed)
+		SDL_RenderCopy(renderer, getTexture(), &src, &dst);
+	else{
+		src.w = 200;
+		dst.w = 200;
+		SDL_RenderCopy(renderer, getTexture(), &src, &dst);
+		src.x = 600;
+		dst.x = 600;
+		SDL_RenderCopy(renderer, getTexture(), &src, &dst);
+	}
+		
+}
+
+
+
